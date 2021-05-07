@@ -28,8 +28,11 @@ public class GameLogic : MonoBehaviour
     private int indexTrueAnswer = 0;
     private int indexPlayerChoice = -1;
 
+    private YandexSDK yandexSDK;
     private void Start()
     {
+        yandexSDK = YandexSDK.instance;
+        yandexSDK.onRewardedAdOpened+=ShowHelpPanel;
         LoadScore();
     }
     
@@ -175,6 +178,13 @@ public class GameLogic : MonoBehaviour
         return true;
     }
 
-
+    private void ShowHelpPanel(int i)
+    {
+        panelHelp.SetActive(true);
+    }
+    public void ButtonClicHelp()
+    {
+        yandexSDK.ShowRewarded("menu");
+    }
 
 }
