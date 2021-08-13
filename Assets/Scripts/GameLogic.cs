@@ -8,19 +8,19 @@ public class GameLogic : MonoBehaviour
     [SerializeField] private QustionStruct[] qustions;
 
     [Space(5)]
-    [SerializeField] private GameObject panelHelp;
     [SerializeField] private GameObject panelButtonsNext;
     [SerializeField] private GameObject panelGameCompleted;
     [SerializeField] private Button[] bottonsAnswer;
 
     [Space(5)]
     [SerializeField] private TextMeshProUGUI textQuestion;
-    [SerializeField] private TextMeshProUGUI textHelper;
 
     [Space(5)]
     [SerializeField] private TextMeshProUGUI textScore;
     [SerializeField] private TextMeshProUGUI textScore2;
 
+    private TextMeshProUGUI[] buttonsAnswerText;
+    private byte countClick = 0; //Для подсчета кол-во кликов до показа рекламы 
 
     //Текущий ответ игрока
     private string answerPlayer = "";
@@ -28,14 +28,22 @@ public class GameLogic : MonoBehaviour
     private int indexTrueAnswer = 0;
     private int indexPlayerChoice = -1;
 
-    private YandexSDK yandexSDK;
     private void Start()
     {
-        yandexSDK = YandexSDK.instance;
-        yandexSDK.onRewardedAdOpened+=ShowHelpPanel;
+        InitializeButtonsAnswerText();
         LoadScore();
     }
     
+    private void InitializeButtonsAnswerText()
+    {
+        buttonsAnswerText = new TextMeshProUGUI[bottonsAnswer.Length];
+
+        for (int i = 0; i < bottonsAnswer.Length; i++)
+        {
+            buttonsAnswerText[i] = bottonsAnswer[i].GetComponentInChildren<TextMeshProUGUI>();
+        }
+    }
+
     public void LoadScore()
     {
         textScore.text = "Правильных ответов " + PlayerStats.instanse.Score + " из "+qustions.Length+".";
@@ -59,8 +67,6 @@ public class GameLogic : MonoBehaviour
         }
 
         textQuestion.text = qustions[PlayerStats.instanse.Level].question;
-        textHelper.text = qustions[PlayerStats.instanse.Level].help;
-
         SetAnswer();
     }
 
@@ -81,7 +87,7 @@ public class GameLogic : MonoBehaviour
 
         for (int i = 0; i < bottonsAnswer.Length; i++)
         {
-            bottonsAnswer[i].GetComponentInChildren<TextMeshProUGUI>().text = _answers[i];
+            buttonsAnswerText[i].text = _answers[i];
 
             if(_answers[i] == qustions[PlayerStats.instanse.Level].trueAnswer)
             {
@@ -111,7 +117,7 @@ public class GameLogic : MonoBehaviour
         if(bottonsAnswer.Length <= index || bottonsAnswer == null) { return;}
 
         bottonsAnswer[index].image.color = Color.yellow;
-        answerPlayer = bottonsAnswer[index].GetComponentInChildren<TextMeshProUGUI>().text;
+        answerPlayer = buttonsAnswerText[index].text;
         indexPlayerChoice = index;
 
         for (int i = 0; i < bottonsAnswer.Length; i++)
@@ -154,6 +160,14 @@ public class GameLogic : MonoBehaviour
         panelButtonsNext.SetActive(true);
 
         LoadScore();
+
+        countClick++;
+        if(countClick >= 10)
+        {
+            countClick = 0;
+
+            //ToDO
+        }
     }
 
     //Метод проверки пройденных уровней
@@ -176,15 +190,6 @@ public class GameLogic : MonoBehaviour
         }
 
         return true;
-    }
-
-    private void ShowHelpPanel(int i)
-    {
-        panelHelp.SetActive(true);
-    }
-    public void ButtonClicHelp()
-    {
-        yandexSDK.ShowRewarded("menu");
     }
 
 }
